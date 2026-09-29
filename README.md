@@ -73,7 +73,7 @@ jq -r '"\(.sha256)  \(.archive)"' index.json | sha256sum -c
 
 ## Maintenance
 
-Shopware colleagues with write access, such as the shopwareLabs team `shopware-devs`, contribute through pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md). Every pull request runs the catalogue check against `catalogue.schema.json` and needs a code owner's review before it is merged into `main`. Issues, the wiki, discussions and projects are switched off.
+Shopware colleagues with write access, such as the shopwareLabs team `shopware-devs`, contribute through pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md). Every pull request needs signed commits, a passing catalogue check against `catalogue.schema.json` and a code owner's review, and is squash-merged into `main`. Issues, the wiki, discussions and projects are switched off.
 
 Only maintainers can push a release tag `v<major>.<minor>.<patch>`, which runs `.github/workflows/release.yml`. A read-only job first checks that the tag is on `main` and runs the catalogue check. The release job then waits for approval in the protected `release` environment, builds the archive, signs the index with the environment secret `CATALOGUE_SIGNING_KEY` (an Ed25519 private key in PEM) and publishes the release.
 

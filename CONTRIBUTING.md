@@ -45,6 +45,13 @@ Only contribute images you have the rights to. Everything in this repository is 
 - New property groups and categories are fine; the test-data command creates and removes them.
 - The catalogue must keep enough kinds of products for the test-data command: the check fails when a product type it needs is missing.
 
+## Pull requests
+
+- Work on a branch and open a pull request against `main`; nobody pushes to `main` directly.
+- **Every commit must be signed and verified.** GitHub accepts GPG, SSH and S/MIME signatures; a GPG or SSH key must be added to your GitHub account as a signing key. See GitHub's [Signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits). An unsigned commit on the branch blocks the merge, so sign before you push, or rebase and re-sign.
+- The check `catalogue` must pass, and a code owner must approve.
+- Pull requests are squash-merged, so the title becomes the commit on `main`. Use a conventional title such as `feat: add a scented candle` or `fix: correct the honey allergens`.
+
 ## Check locally
 
 With Python 3.12 to 3.14:
@@ -54,4 +61,4 @@ python3 -m pip install --no-deps --require-hashes -r .github/requirements-check.
 python3 .github/bin/check-catalogue.py
 ```
 
-The same check runs on every pull request. A code owner reviews and merges; maintainers cut releases from `main`.
+The same check runs on every pull request. Maintainers cut releases from `main`.
