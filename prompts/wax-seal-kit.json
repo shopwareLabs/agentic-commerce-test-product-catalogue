@@ -1,0 +1,17 @@
+{
+  "id": "wax-seal-kit",
+  "images": {
+    "cover.webp": {
+      "prompt": "Professional e-commerce product photograph of exactly one a brass wax seal stamp with a wooden handle, three sticks of burgundy, gold and forest green sealing wax, a small melting spoon, in an open wooden case. Centred, three-quarter front view, the whole product in frame with generous margin, seamless pure white studio background, soft even softbox lighting, subtle natural contact shadow, sharp focus, true-to-life colours and materials, high detail, no text, no logos, no watermark, no people.",
+      "model": "Qwen/Qwen-Image-2512"
+    },
+    "lifestyle.webp": {
+      "prompt": "The exact same product as in the reference image: a brass wax seal stamp with a wooden handle, three sticks of burgundy, gold and forest green sealing wax, a small melting spoon, in an open wooden case. Keep its shape, colours, materials and proportions identical, and show it exactly once. Lifestyle product photograph: on a desk by candlelight beside a sealed envelope with a burgundy wax seal. The product is the clear focal point, natural light, realistic setting, magazine-quality composition, no text, no logos, no watermark, no people, no hands, no feet, no body parts.",
+      "model": "Qwen/Qwen-Image-Edit-2511"
+    },
+    "scale.webp": {
+      "prompt": "The exact same product as in the reference image: a brass wax seal stamp with a wooden handle, three sticks of burgundy, gold and forest green sealing wax, a small melting spoon, in an open wooden case. Keep its shape, colours, materials and proportions identical, show it exactly once, at its true real-world size. Product photograph that makes its size clear: the product placed on a desk next to a standard letter envelope. The object next to it is a different, ordinary item, never a second copy of the product. Both fully visible in correct proportion to each other, eye-level three-quarter view, soft natural daylight, tidy neutral background, sharp focus, no text, no logos, no watermark, no people, no hands.",
+      "model": "Qwen/Qwen-Image-Edit-2511"
+    }
+  }
+}

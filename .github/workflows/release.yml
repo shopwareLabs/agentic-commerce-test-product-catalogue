@@ -1,0 +1,112 @@
+name: Release
+
+# A pushed v* tag checks the catalogue, builds the archive, signs its index with the Ed25519 key in the release
+# environment and publishes all three files as the release. The plugin fetches them from releases/latest/download/.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  # Runs the third-party validator without write access and without the signing key.
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # GITHUB_TOKEN cannot create a release for a commit whose workflow files differ from the default branch.
+      - name: Require the tag on the default branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" "origin/$DEFAULT_BRANCH" || { echo "Tag $GITHUB_REF_NAME is not on $DEFAULT_BRANCH"; exit 1; }
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Check the catalogue
+        run: |
+          python -m pip install --no-deps --require-hashes -r .github/requirements-check.txt
+          python .github/bin/check-catalogue.py
+
+  release:
+    needs: check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    # Required reviewers on this environment guard the signing key.
+    environment: release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the archive
+        id: build
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Tag $GITHUB_REF_NAME is not vMAJOR.MINOR.PATCH"; exit 1; }
+          [ "$(jq '.schema' catalogue.json)" = 1 ] || { echo "catalogue.json lacks schema 1"; exit 1; }
+
+          archive="test-product-catalogue-${version}.zip"
+          mkdir -p staging dist
+          jq --arg version "$version" '.version = $version' catalogue.json > staging/catalogue.json
+          cp -R images prompts LICENSE catalogue.schema.json staging/
+          # WebP is already compressed, so the images are stored; the JSON is deflated.
+          (cd staging && zip -X -q -r -0 "../dist/$archive" images && zip -X -q -r -9 "../dist/$archive" catalogue.json catalogue.schema.json prompts LICENSE)
+
+          jq -n \
+            --arg version "$version" \
+            --arg archive "$archive" \
+            --argjson size "$(stat -c %s "dist/$archive")" \
+            --arg sha256 "$(sha256sum "dist/$archive" | cut -d' ' -f1)" \
+            --arg created "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{schema: 1, version: $version, archive: $archive, size: $size, sha256: $sha256, created: $created}' > dist/index.json
+          cat dist/index.json
+
+          echo "images=$(jq '[.products[].images[]] | length' catalogue.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Sign the index
+        env:
+          CATALOGUE_SIGNING_KEY: ${{ secrets.CATALOGUE_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          [ -n "$CATALOGUE_SIGNING_KEY" ] || { echo "The release environment has no CATALOGUE_SIGNING_KEY secret"; exit 1; }
+          key="$RUNNER_TEMP/signing-key.pem"
+          trap 'rm -f "$key"' EXIT
+          (umask 077 && printf '%s\n' "$CATALOGUE_SIGNING_KEY" > "$key")
+
+          openssl pkeyutl -sign -rawin -inkey "$key" -in dist/index.json -out dist/index.json.raw-sig
+          base64 -w0 dist/index.json.raw-sig > dist/index.json.sig
+
+          # The same check the plugin runs, so a broken key never reaches a release.
+          openssl pkey -in "$key" -pubout -out "$RUNNER_TEMP/public-key.pem"
+          openssl pkeyutl -verify -rawin -pubin -inkey "$RUNNER_TEMP/public-key.pem" -in dist/index.json -sigfile dist/index.json.raw-sig
+          rm dist/index.json.raw-sig
+          echo "Public key (compare with the key pinned in the plugin): $(openssl pkey -pubin -in "$RUNNER_TEMP/public-key.pem" -outform DER | tail -c 32 | base64 -w0)"
+
+      - name: Check the archive
+        run: |
+          set -euo pipefail
+          archive="dist/$(jq -r '.archive' dist/index.json)"
+          listed=$(unzip -Z1 "$archive" | grep -c '\.webp$')
+          [ "$listed" = "${{ steps.build.outputs.images }}" ] || { echo "Archive holds $listed images, catalogue.json lists ${{ steps.build.outputs.images }}"; exit 1; }
+          unzip -p "$archive" catalogue.json | jq -e --arg version "${GITHUB_REF_NAME#v}" '.version == $version' > /dev/null
+          echo "$listed images, $(stat -c %s "$archive") bytes"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "Test product catalogue ${GITHUB_REF_NAME#v}" \
+            --notes "Signed archive for swag-agentic-commerce:test-data. Verify index.json.sig against the key pinned in the plugin, then the archive against the size and SHA-256 in index.json." \
+            --latest

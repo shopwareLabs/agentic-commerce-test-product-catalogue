@@ -1,0 +1,17 @@
+{
+  "id": "espresso-beans",
+  "images": {
+    "cover.webp": {
+      "prompt": "Professional e-commerce product photograph of exactly one a matte black stand-up coffee bag with a one-way valve and a plain white label area, a small pile of glossy dark roasted coffee beans spilling in front of it. Centred, three-quarter front view, the whole product in frame with generous margin, seamless pure white studio background, soft even softbox lighting, subtle natural contact shadow, sharp focus, true-to-life colours and materials, high detail, no text, no logos, no watermark, no people.",
+      "model": "Qwen/Qwen-Image-2512"
+    },
+    "lifestyle.webp": {
+      "prompt": "The exact same product as in the reference image: a matte black stand-up coffee bag with a one-way valve and a plain white label area, a small pile of glossy dark roasted coffee beans spilling in front of it. Keep its shape, colours, materials and proportions identical, and show it exactly once. Lifestyle product photograph: next to a burr grinder and a freshly pulled espresso on a café counter. The product is the clear focal point, natural light, realistic setting, magazine-quality composition, no text, no logos, no watermark, no people, no hands, no feet, no body parts.",
+      "model": "Qwen/Qwen-Image-Edit-2511"
+    },
+    "scale.webp": {
+      "prompt": "The exact same product as in the reference image: a matte black stand-up coffee bag with a one-way valve and a plain white label area, a small pile of glossy dark roasted coffee beans spilling in front of it. Keep its shape, colours, materials and proportions identical, show it exactly once, at its true real-world size. Product photograph that makes its size clear: the product placed on a café counter next to an espresso cup. The object next to it is a different, ordinary item, never a second copy of the product. Both fully visible in correct proportion to each other, eye-level three-quarter view, soft natural daylight, tidy neutral background, sharp focus, no text, no logos, no watermark, no people, no hands.",
+      "model": "Qwen/Qwen-Image-Edit-2511"
+    }
+  }
+}

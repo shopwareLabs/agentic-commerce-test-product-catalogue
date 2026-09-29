@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shopwareLabs/agentic-commerce-test-product-catalogue/blob/main/catalogue.schema.json",
+  "title": "Agentic Commerce test product catalogue, schema 1",
+  "description": "catalogue.json. Relations between entries (keys that must exist, files on disk, GTIN check digits) are checked by .github/bin/check-catalogue.py.",
+  "type": "object",
+  "required": ["schema", "licence", "categories", "propertyGroups", "manufacturers", "products"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema": { "const": 1 },
+    "version": {
+      "description": "Written by the release workflow from the tag; leave it out in the repository.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "licence": { "const": "CC0-1.0" },
+    "categories": {
+      "description": "Shop categories in the order the category tree shows them.",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/key" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": { "name": { "$ref": "#/$defs/translated" } }
+      }
+    },
+    "propertyGroups": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/key" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "display", "options"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "$ref": "#/$defs/translated" },
+          "display": {
+            "description": "color shows swatches from the variant options' colours.",
+            "enum": ["text", "color"]
+          },
+          "options": {
+            "description": "Options products list under properties. Variant options are defined with their product.",
+            "type": "object",
+            "propertyNames": { "$ref": "#/$defs/key" },
+            "additionalProperties": {
+              "type": "object",
+              "required": ["name"],
+              "additionalProperties": false,
+              "properties": { "name": { "$ref": "#/$defs/translated" } }
+            }
+          }
+        }
+      }
+    },
+    "manufacturers": {
+      "description": "Fictional manufacturers only; a real brand is a trademark problem.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/key" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "$ref": "#/$defs/text" },
+          "description": { "$ref": "#/$defs/translated" }
+        }
+      }
+    },
+    "products": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/product" }
+    }
+  },
+  "$defs": {
+    "key": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "text": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "translated": {
+      "description": "The same text in English and German.",
+      "type": "object",
+      "required": ["en", "de"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "$ref": "#/$defs/text" },
+        "de": { "$ref": "#/$defs/text" }
+      }
+    },
+    "productName": {
+      "description": "Shopware stores 255 characters; the test-data command adds the prefix \"[AC Test] \" (10).",
+      "type": "object",
+      "required": ["en", "de"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "$ref": "#/$defs/text", "maxLength": 245 },
+        "de": { "$ref": "#/$defs/text", "maxLength": 245 }
+      }
+    },
+    "metaText": {
+      "type": "object",
+      "required": ["en", "de"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "$ref": "#/$defs/text", "maxLength": 255 },
+        "de": { "$ref": "#/$defs/text", "maxLength": 255 }
+      }
+    },
+    "money": {
+      "description": "Gross amount in euros.",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "positive": { "type": "number", "exclusiveMinimum": 0 },
+    "gtin": {
+      "description": "EAN-13 in the GS1 prefix range 200-299, reserved for internal use, so it never matches a real product.",
+      "type": "string",
+      "pattern": "^2[0-9]{12}$"
+    },
+    "deliveryTime": {
+      "description": "The test-data command maps 1-3 days, 2-5 days and 1-2 weeks to Shopware delivery times; other values are left out.",
+      "type": "object",
+      "required": ["min", "max", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "min": { "type": "integer", "minimum": 0 },
+        "max": { "type": "integer", "minimum": 1 },
+        "unit": { "enum": ["hour", "day", "week", "month", "year"] }
+      }
+    },
+    "image": {
+      "type": "object",
+      "required": ["file", "role", "alt", "aiGenerated"],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "description": "images/<product id>/<shot>.webp",
+          "type": "string",
+          "pattern": "^images/[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*\\.webp$"
+        },
+        "role": {
+          "description": "Exactly one cover per product. A variant image is the cover of the option that names it.",
+          "enum": ["cover", "lifestyle", "scale", "variant", "detail"]
+        },
+        "alt": { "$ref": "#/$defs/translated" },
+        "aiGenerated": {
+          "description": "true requires the visible label and the IPTC trainedAlgorithmicMedia marker in the file, and alt texts that say so.",
+          "type": "boolean"
+        },
+        "model": {
+          "description": "The model that generated the image, if any.",
+          "type": "string"
+        }
+      }
+    },
+    "variantOption": {
+      "type": "object",
+      "required": ["key", "name", "type", "priceDelta", "stock"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/key" },
+        "name": { "$ref": "#/$defs/translated" },
+        "type": { "enum": ["physical", "digital"] },
+        "color": {
+          "description": "Swatch colour for a group with display color.",
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "gtin": { "$ref": "#/$defs/gtin" },
+        "priceDelta": {
+          "description": "Added to the parent price; 0 inherits it.",
+          "type": "number"
+        },
+        "stock": { "type": "integer", "minimum": 0 },
+        "weight": { "$ref": "#/$defs/positive", "description": "kg" },
+        "deliveryTime": { "$ref": "#/$defs/deliveryTime" },
+        "image": {
+          "description": "A variant image of this product; null or absent shows the parent's images.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "product": {
+      "type": "object",
+      "required": ["id", "type", "gtin", "name", "description", "price", "tax", "stock", "categories", "images"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/key" },
+        "type": { "enum": ["physical", "digital"] },
+        "gtin": { "$ref": "#/$defs/gtin" },
+        "name": { "$ref": "#/$defs/productName" },
+        "description": {
+          "description": "HTML shop description.",
+          "$ref": "#/$defs/translated"
+        },
+        "keywords": { "$ref": "#/$defs/translated" },
+        "metaTitle": { "$ref": "#/$defs/metaText" },
+        "metaDescription": { "$ref": "#/$defs/metaText" },
+        "manufacturer": { "$ref": "#/$defs/key" },
+        "categories": {
+          "description": "Category keys; the first is the main category.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/key" }
+        },
+        "price": { "$ref": "#/$defs/money" },
+        "listPrice": { "$ref": "#/$defs/money" },
+        "tax": {
+          "description": "reduced for food, books and e-books in Germany.",
+          "enum": ["standard", "reduced"]
+        },
+        "stock": { "type": "integer", "minimum": 0 },
+        "weight": { "$ref": "#/$defs/positive", "description": "kg" },
+        "width": { "$ref": "#/$defs/positive", "description": "mm" },
+        "height": { "$ref": "#/$defs/positive", "description": "mm" },
+        "length": { "$ref": "#/$defs/positive", "description": "mm" },
+        "deliveryTime": { "$ref": "#/$defs/deliveryTime" },
+        "unit": {
+          "description": "Unit price: a pack holds purchase units, the price is shown per reference units.",
+          "type": "object",
+          "required": ["code", "purchase", "reference"],
+          "additionalProperties": false,
+          "properties": {
+            "code": { "enum": ["kg", "g", "l", "ml", "pc"] },
+            "purchase": { "$ref": "#/$defs/positive" },
+            "reference": { "$ref": "#/$defs/positive" }
+          }
+        },
+        "purchase": {
+          "type": "object",
+          "required": ["min", "max", "steps"],
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "integer", "minimum": 1 },
+            "max": { "type": "integer", "minimum": 1 },
+            "steps": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "properties": {
+          "description": "Property group key to option keys, for properties that are not variant options.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/key" },
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "#/$defs/key" }
+          }
+        },
+        "customFields": {
+          "description": "Only the fields of the plugin's custom field set.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "care_note": { "$ref": "#/$defs/translated" },
+            "warranty_years": { "type": "integer", "minimum": 0, "maximum": 99 },
+            "recyclable": { "type": "boolean" },
+            "ingredients": { "$ref": "#/$defs/translated" },
+            "allergens": { "$ref": "#/$defs/translated" }
+          }
+        },
+        "crossSelling": {
+          "description": "Ids of other products.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/key" }
+        },
+        "images": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/image" }
+        },
+        "variants": {
+          "type": "object",
+          "required": ["group", "options"],
+          "additionalProperties": false,
+          "properties": {
+            "group": { "$ref": "#/$defs/key" },
+            "options": {
+              "description": "The first option is the look the cover shows.",
+              "type": "array",
+              "minItems": 2,
+              "items": { "$ref": "#/$defs/variantOption" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

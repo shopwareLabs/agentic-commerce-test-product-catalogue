@@ -1,0 +1,17 @@
+{
+  "id": "owl-alarm-clock",
+  "images": {
+    "cover.webp": {
+      "prompt": "Professional e-commerce product photograph of exactly one a small wooden alarm clock shaped like an owl, warm light wood body, one big round eye is an analog clock face with black hands, the other eye a round speaker grille, small ear tufts. Centred, three-quarter front view, the whole product in frame with generous margin, seamless pure white studio background, soft even softbox lighting, subtle natural contact shadow, sharp focus, true-to-life colours and materials, high detail, no text, no logos, no watermark, no people.",
+      "model": "Qwen/Qwen-Image-2512"
+    },
+    "lifestyle.webp": {
+      "prompt": "The exact same product as in the reference image: a small wooden alarm clock shaped like an owl, warm light wood body, one big round eye is an analog clock face with black hands, the other eye a round speaker grille, small ear tufts. Keep its shape, colours, materials and proportions identical, and show it exactly once. Lifestyle product photograph: on a nightstand beside a stack of books and a reading lamp, the owl clock is the only clock in the picture. The product is the clear focal point, natural light, realistic setting, magazine-quality composition, no text, no logos, no watermark, no people, no hands, no feet, no body parts.",
+      "model": "Qwen/Qwen-Image-Edit-2511"
+    },
+    "scale.webp": {
+      "prompt": "The exact same product as in the reference image: a small wooden alarm clock shaped like an owl, warm light wood body, one big round eye is an analog clock face with black hands, the other eye a round speaker grille, small ear tufts. Keep its shape, colours, materials and proportions identical, show it exactly once, at its true real-world size. Product photograph that makes its size clear: the product placed on a nightstand next to a paperback book, the owl clock is the only clock in the picture. The object next to it is a different, ordinary item, never a second copy of the product. Both fully visible in correct proportion to each other, eye-level three-quarter view, soft natural daylight, tidy neutral background, sharp focus, no text, no logos, no watermark, no people, no hands.",
+      "model": "Qwen/Qwen-Image-Edit-2511"
+    }
+  }
+}
